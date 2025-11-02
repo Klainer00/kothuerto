@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.values
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -43,17 +44,21 @@ import com.example.huerto1.ui.screens.ProductListScreen
 import com.example.huerto1.viewmodel.CartViewModel
 import com.example.huerto1.viewmodel.ProductListViewModel
 import kotlinx.coroutines.launch
-
+import androidx.compose.material3.MaterialTheme
 // Definición de las rutas de la aplicación
 sealed class AppScreen(val route: String, val title: String) {
     object Login : AppScreen("login", "Login")
     object ProductList : AppScreen("product_list", "Productos")
     object Cart : AppScreen("cart", "Carro de Compras")
     object Profile : AppScreen("profile", "Perfil") // Ruta para el Drawer
+    companion object {
+        val screens = listOf(Login, ProductList, Cart, Profile)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+
 fun AppNavigation() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -82,8 +87,7 @@ fun AppNavigation() {
             topBar = {
                 if (showMainUI) {
                     MainTopBar(
-                        title = AppScreen.values().find { it.route == currentRoute }?.title ?: "KotHuerto",
-                        onMenuClick = {
+                        title = AppScreen.screens.find { it.route == currentRoute }?.title ?: "KotHuerto",onMenuClick = {
                             scope.launch { drawerState.open() }
                         },
                         onCartClick = {

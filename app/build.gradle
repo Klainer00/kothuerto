@@ -1,12 +1,12 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace 'com.example.huerto1'
-    compileSdk 34 // Mínimo 34 para Compose
+    compileSdk 36 // Mínimo 34 para Compose
 
     defaultConfig {
         applicationId "com.example.huerto1"
@@ -62,7 +62,6 @@ dependencies {
     implementation libs.androidx.compose.ui.tooling.preview
     implementation libs.androidx.compose.material3
     implementation libs.androidx.compose.material.icons
-
     // --- ViewModel y Lifecycle ---
     implementation libs.androidx.lifecycle.runtime.ktx
     implementation libs.androidx.lifecycle.viewmodel.compose
@@ -81,5 +80,8 @@ dependencies {
     androidTestImplementation libs.androidx.compose.ui.test.junit4
     debugImplementation libs.androidx.compose.ui.tooling
     debugImplementation libs.androidx.compose.ui.test.manifest
+    // Add the Material 3 dependency here
+    implementation("androidx.compose.material3:material3:1.2.0-alpha10")
+
 }
 
