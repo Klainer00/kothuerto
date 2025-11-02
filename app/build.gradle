@@ -1,13 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    // 1. AÑADIR ESTA LÍNEA:
+    alias(libs.plugins.kotlin.compose.compiler)
 }
 
 android {
     namespace 'com.example.huerto1'
-    compileSdk {
-        version = release(36) // Actualizado a SDK 34 (Compose requiere 33+)
-    }
+    compileSdk 34 // Mínimo 34 para Compose
 
     defaultConfig {
         applicationId "com.example.huerto1"
@@ -29,15 +29,20 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8 // Cambiado a 1.8
-        targetCompatibility JavaVersion.VERSION_1_8 // Cambiado a 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = '1.8' // Cambiado a 1.8
+        jvmTarget = '1.8'
     }
     buildFeatures {
-        compose true // Habilitar Compose
+        // Habilitar Jetpack Compose
+        compose true
     }
+
+    // 2. ELIMINAR EL BLOQUE 'composeOptions'
+    // El bloque 'composeOptions { ... }' que estaba aquí se elimina.
+
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -51,30 +56,31 @@ dependencies {
     implementation libs.material
 
     // --- Dependencias de Jetpack Compose ---
-    implementation "androidx.activity:activity-compose:1.9.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
-    implementation platform("androidx.compose:compose-bom:2024.06.00")
-    implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-graphics"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material3:material3"
-    implementation "androidx.compose.material:material-icons-extended"
+    implementation libs.androidx.activity.compose
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.graphics
+    implementation libs.androidx.compose.ui.tooling.preview
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.material.icons
+
+    // --- ViewModel y Lifecycle ---
+    implementation libs.androidx.lifecycle.runtime.ktx
+    implementation libs.androidx.lifecycle.viewmodel.compose
 
     // --- Navegación ---
-    implementation "androidx.navigation:navigation-compose:2.7.7"
-
-    // --- ViewModels ---
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4"
+    implementation libs.androidx.navigation.compose
 
     // --- Carga de Imágenes (Coil) ---
-    implementation "io.coil-kt:coil-compose:2.6.0"
+    implementation libs.coil.compose
 
     // --- Pruebas ---
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
-    androidTestImplementation platform("androidx.compose:compose-bom:2024.06.00")
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-tooling"
-    debugImplementation "androidx.compose.ui:ui-test-manifest"
+    androidTestImplementation platform(libs.androidx.compose.bom)
+    androidTestImplementation libs.androidx.compose.ui.test.junit4
+    debugImplementation libs.androidx.compose.ui.tooling
+    debugImplementation libs.androidx.compose.ui.test.manifest
 }
+
