@@ -6,7 +6,7 @@ plugins {
 android {
     namespace 'com.example.huerto1'
     compileSdk {
-        version = release(36)
+        version = release(36) // Actualizado a SDK 34 (Compose requiere 33+)
     }
 
     defaultConfig {
@@ -17,6 +17,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
     }
 
     buildTypes {
@@ -26,11 +29,22 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_1_8 // Cambiado a 1.8
+        targetCompatibility JavaVersion.VERSION_1_8 // Cambiado a 1.8
     }
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '1.8' // Cambiado a 1.8
+    }
+    buildFeatures {
+        compose true // Habilitar Compose
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.14' // Versión compatible
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -38,7 +52,32 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material
+
+    // --- Dependencias de Jetpack Compose ---
+    implementation "androidx.activity:activity-compose:1.9.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation platform("androidx.compose:compose-bom:2024.06.00")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-graphics"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.material:material-icons-extended"
+
+    // --- Navegación ---
+    implementation "androidx.navigation:navigation-compose:2.7.7"
+
+    // --- ViewModels ---
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4"
+
+    // --- Carga de Imágenes (Coil) ---
+    implementation "io.coil-kt:coil-compose:2.6.0"
+
+    // --- Pruebas ---
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
+    androidTestImplementation platform("androidx.compose:compose-bom:2024.06.00")
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
 }
