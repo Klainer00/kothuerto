@@ -48,7 +48,7 @@ import coil.compose.AsyncImage
 import com.example.huerto1.R
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.viewmodel.CartViewModel
-import kotlin.reflect.KProperty // <-- IMPORTACIÓN AÑADIDA PARA AYUDAR AL COMPILADOR
+// <-- IMPORTACIÓN DE KProperty ELIMINADA DE AQUÍ
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

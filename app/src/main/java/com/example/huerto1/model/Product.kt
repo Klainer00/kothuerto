@@ -1,15 +1,17 @@
 package com.example.huerto1.model
 // Modelo para un Producto
+
 data class Product(
     val id: String,
     val name: String,
+    val description: String,
     val price: Double,
-    val imageUrl: String, // URL de la imagen
-    val description: String
+    val unit: String, // "Kg", "Unidad", "Atado", etc.
+    val imageUrl: String
 )
 
-// Modelo para un ítem en el carro de compras
 data class CartItem(
     val product: Product,
-    var quantity: Int
+    val quantity: Int
 )
+
