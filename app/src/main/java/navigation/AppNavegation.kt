@@ -1,4 +1,4 @@
-package navigation
+package com.example.huerto1.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -261,3 +261,4 @@ fun DrawerContent(navController: NavHostController, onCloseDrawer: () -> Unit) {
         Spacer(Modifier.height(12.dp))
     }
 }
+
