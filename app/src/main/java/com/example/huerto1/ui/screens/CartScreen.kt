@@ -1,229 +1,293 @@
 package com.example.huerto1.ui.screens
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
-import androidx.compose.material3.ExperimentalMaterial3Api
+// La importación de ExperimentalMaterial3Api se ha eliminado
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
-import androidx.compose.material3.experimental.ExperimentalMaterial3Api
-import androidx.compose.material3.experimental.rememberDismissState
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.huerto1.R
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.viewmodel.CartViewModel
-@OptIn(ExperimentalMaterial3Api::class) // Make sure this annotation is here
-@Composable
-fun SwipeToDeleteItem(
-    item: CartItem,
-    onRemove: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    // This line will now work correctly
-    val dismissState = androidx.compose.material3.rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) {
-                onRemove()
-                true
-            } else false
-        }
-    )
 
-    SwipeToDismiss(
-        state = dismissState,
-        directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
-        background = {
-            SwipeBackground(dismissState)
-        },
-        dismissContent = {
-            content()
-        }
-    )
-}
+// --- LA ANOTACIÓN @OptIn HA SIDO ELIMINADA DE AQUÍ ---
 @Composable
 fun CartScreen(
-    viewModel: CartViewModel,
-    onCheckout: () -> Unit
+    cartViewModel: CartViewModel = viewModel(),
+    onBackPress: () -> Unit
 ) {
-    val cartItems by viewModel.cartItems.collectAsState()
-    val total by viewModel.total.collectAsState()
+    val cartItems by cartViewModel.cartItems.collectAsState()
+    val totalPrice by cartViewModel.totalPrice.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        if (cartItems.isEmpty()) {
-            // Carro Vacío
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Tu carro está vacío", style = MaterialTheme.typography.headlineSmall)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(id = R.string.screen_title_cart)) },
+                navigationIcon = {
+                    IconButton(onClick = onBackPress) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        },
+        bottomBar = {
+            if (cartItems.isNotEmpty()) {
+                BottomBar(totalPrice = totalPrice, onCheckoutClick = {
+                    cartViewModel.checkout()
+                    // Aquí también podrías navegar a una pantalla de "Éxito"
+                })
             }
-        } else {
-            // Lista de Items
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(cartItems, key = { it.product.id }) { item ->
-                    SwipeToDeleteItem(
-                        item = item,
-                        onRemove = { viewModel.removeItem(item) }
-                    ) {
-                        CartItemCard(
-                            item = item,
-                            onQuantityChange = { newQuantity ->
-                                viewModel.updateQuantity(item, newQuantity)
-                            }
-                        )
+        }
+    ) { paddingValues ->
+        Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            if (cartItems.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(id = R.string.cart_empty),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(cartItems, key = { it.product.id }) { item ->
+                        CartItemRow(item = item, viewModel = cartViewModel)
                     }
                 }
             }
+        }
+    }
+}
 
-            // Total y Checkout
-            Spacer(modifier = Modifier.height(16.dp))
+@Composable
+fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
+    // Estado para el swipe-to-dismiss
+    val dismissState = rememberDismissState(
+        confirmValueChange = { dismissValue ->
+            if (dismissValue == DismissValue.DismissedToEnd || dismissValue == DismissValue.DismissedToStart) {
+                viewModel.removeFromCart(item.product)
+                true // Confirmar el "dismiss"
+            } else {
+                false // No hacer nada si no se deslizó completamente
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            // Contenido de fondo (ícono de eliminar)
+            val color = when (dismissState.dismissDirection) {
+                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.errorContainer
+                DismissDirection.EndToStart -> MaterialTheme.colorScheme.errorContainer
+                null -> Color.Transparent
+            }
+            val alignment = when (dismissState.dismissDirection) {
+                DismissDirection.StartToEnd -> Alignment.CenterStart
+                DismissDirection.EndToStart -> Alignment.CenterEnd
+                null -> Alignment.Center
+            }
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(color, shape = RoundedCornerShape(12.dp))
+                    .padding(horizontal = 20.dp),
+                contentAlignment = alignment
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    tint = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+        },
+        enableDismissFromEndToStart = true,
+        enableDismissFromStartToEnd = true
+    ) {
+        // Contenido principal del item
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                AsyncImage(
+                    model = item.product.imageUrl,
+                    contentDescription = item.product.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = item.product.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "$${String.format("%.0f", item.product.price)} / ${item.product.unit}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                QuantitySelector(
+                    quantity = item.quantity,
+                    onIncrease = { viewModel.addToCart(item.product) },
+                    onDecrease = { viewModel.decreaseQuantity(item.product) }
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun QuantitySelector(
+    quantity: Int,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .background(
+                MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(50)
+            )
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+    ) {
+        IconButton(
+            onClick = onDecrease,
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+        ) {
+            Icon(
+                Icons.Default.Remove,
+                contentDescription = "Restar",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+        Text(
+            text = "$quantity",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.widthIn(min = 24.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        IconButton(
+            onClick = onIncrease,
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Sumar",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+fun BottomBar(totalPrice: Double, onCheckoutClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
             Text(
-                "Total: $${"%.2f".format(total)}",
+                stringResource(id = R.string.total),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "$${String.format("%.0f", totalPrice)}",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.End)
+                color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    viewModel.checkout()
-                    onCheckout()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Enviar Venta")
-            }
         }
-    }
-}
-
-// Card de ítem en el carro (con modificación)
-@Composable
-fun CartItemCard(item: CartItem, onQuantityChange: (Int) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Button(
+            onClick = onCheckoutClick,
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
         ) {
-            AsyncImage(
-                model = item.product.imageUrl,
-                contentDescription = item.product.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(60.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.product.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text("$${item.product.price}", style = MaterialTheme.typography.bodyMedium)
-            }
-            // Modificación de cantidad
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { onQuantityChange(item.quantity - 1) }) {
-                    Icon(Icons.Default.Remove, contentDescription = "Restar")
-                }
-                Text("${item.quantity}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 8.dp))
-                IconButton(onClick = { onQuantityChange(item.quantity + 1) }) {
-                    Icon(Icons.Default.Add, contentDescription = "Sumar")
-                }
-            }
+            Text(stringResource(id = R.string.action_checkout), fontSize = 16.sp)
         }
-    }
-}
-
-// Wrapper para Swipe-to-Delete
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwipeToDeleteItem(
-    item: CartItem,
-    onRemove: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) {
-                onRemove()
-                true
-            } else false
-        }
-    )
-
-    SwipeToDismiss(
-        state = dismissState,
-        directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
-        background = {
-            SwipeBackground(dismissState)
-        },
-        dismissContent = {
-            content()
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwipeBackground(dismissState: DismissState) {
-    val color by animateColorAsState(
-        targetValue = if (dismissState.targetValue == DismissValue.Default) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.errorContainer,
-        animationSpec = tween(300), label = ""
-    )
-    val alignment = when (dismissState.dismissDirection) {
-        DismissDirection.StartToEnd -> Alignment.CenterStart
-        DismissDirection.EndToStart -> Alignment.CenterEnd
-        null -> Alignment.Center
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color)
-            .padding(horizontal = 20.dp),
-        contentAlignment = alignment
-    ) {
-        Icon(
-            Icons.Default.Delete,
-            contentDescription = "Eliminar",
-            tint = MaterialTheme.colorScheme.onErrorContainer
-        )
     }
 }
 
