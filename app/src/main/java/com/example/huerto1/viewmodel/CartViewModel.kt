@@ -1,5 +1,6 @@
 package com.example.huerto1.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.huerto1.model.CartItem
@@ -9,68 +10,79 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class CartViewModel : ViewModel() {
 
-    // Estado del carro de compras (persistencia en memoria por ahora)
-    private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
-    val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
+    private val _cartItems = MutableStateFlow<Map<String, CartItem>>(emptyMap())
+    val cartItems: StateFlow<List<CartItem>> = _cartItems
+        .map { it.values.toList().sortedBy { item -> item.product.name } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    // Estado para el total del carro
-    val total: StateFlow<Double> = _cartItems.map { items ->
-        items.sumOf { it.product.price * it.quantity }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
+    // Esta es la propiedad que "CartScreen" no puede encontrar
+    val totalPrice: StateFlow<Double> = _cartItems
+        .map { cartMap ->
+            cartMap.values.sumOf { it.product.price * it.quantity }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0.0
+        )
 
-    // Añadir producto (o incrementar cantidad)
-    fun addProduct(product: Product) {
-        _cartItems.update { currentList ->
-            val existingItem = currentList.find { it.product.id == product.id }
-            if (existingItem != null) {
-                // Si existe, incrementa la cantidad
-                currentList.map {
-                    if (it.product.id == product.id) it.copy(quantity = it.quantity + 1) else it
-                }
+    // Y estas son las funciones que tampoco encuentra
+    fun addToCart(product: Product) {
+        _cartItems.update { currentCart ->
+            val cart = currentCart.toMutableMap()
+            val currentItem = cart[product.id]
+            if (currentItem != null) {
+                cart[product.id] = currentItem.copy(quantity = currentItem.quantity + 1)
             } else {
-                // Si no existe, lo añade
-                currentList + CartItem(product = product, quantity = 1)
+                cart[product.id] = CartItem(product = product, quantity = 1)
             }
+            cart
         }
     }
 
-    // Actualizar cantidad (Modificación)
-    fun updateQuantity(item: CartItem, newQuantity: Int) {
-        if (newQuantity <= 0) {
-            // Si la cantidad es 0 o menos, elimina el ítem
-            removeItem(item)
-        } else {
-            _cartItems.update { currentList ->
-                currentList.map {
-                    if (it.product.id == item.product.id) it.copy(quantity = newQuantity) else it
+    fun decreaseQuantity(product: Product) {
+        _cartItems.update { currentCart ->
+            val cart = currentCart.toMutableMap()
+            val currentItem = cart[product.id]
+            if (currentItem != null) {
+                if (currentItem.quantity > 1) {
+                    cart[product.id] = currentItem.copy(quantity = currentItem.quantity - 1)
+                } else {
+                    cart.remove(product.id)
                 }
             }
+            cart
         }
     }
 
-    // Eliminar producto
-    fun removeItem(item: CartItem) {
-        _cartItems.update { currentList ->
-            currentList.filterNot { it.product.id == item.product.id }
+    fun removeFromCart(product: Product) {
+        _cartItems.update { currentCart ->
+            val cart = currentCart.toMutableMap()
+            cart.remove(product.id)
+            cart
         }
     }
 
-    // Enviar venta al backend
     fun checkout() {
-        viewModelScope.launch {
-            // Aquí iría la lógica de API (Retrofit, Ktor, etc.)
-            println("Enviando venta al backend...")
-            println("Total: ${total.value}")
-            println("Items: ${cartItems.value.joinToString()}")
-
-            // Limpiar carro después de la "venta"
-            _cartItems.value = emptyList()
+        Log.d("CartViewModel", "Iniciando Checkout...")
+        Log.d("CartViewModel", "Total: ${totalPrice.value}")
+        _cartItems.value.values.forEach { item ->
+            Log.d("CartViewModel", "Item: ${item.product.name}, Cantidad: ${item.quantity}")
         }
+        _cartItems.value = emptyMap()
     }
+    fun addProduct(product: Product) {
+
+    }
+
 }
 

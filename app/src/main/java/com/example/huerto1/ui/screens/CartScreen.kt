@@ -1,6 +1,5 @@
 package com.example.huerto1.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,31 +8,29 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
-// --- CORRECCIÓN DE IMPORTACIÓN ---
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-// --- CORRECCIÓN DE IMPORTACIÓN ---
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+// --- ¡ESTA ES LA IMPORTACIÓN CLAVE! ---
 import androidx.compose.runtime.getValue
+// --------------------------------------
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,14 +45,15 @@ import coil.compose.AsyncImage
 import com.example.huerto1.R
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.viewmodel.CartViewModel
-// <-- IMPORTACIÓN DE KProperty ELIMINADA DE AQUÍ
 
+// Volvemos a añadir la anotación OptIn
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     cartViewModel: CartViewModel = viewModel(),
     onBackPress: () -> Unit
 ) {
+    // Estas líneas (60-61) deberían dejar de dar error con la importación añadida
     val cartItems by cartViewModel.cartItems.collectAsState()
     val totalPrice by cartViewModel.totalPrice.collectAsState()
 
@@ -84,7 +82,9 @@ fun CartScreen(
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+        Column(modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxSize()) {
             if (cartItems.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -111,15 +111,14 @@ fun CartScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // <-- Se necesita aquí también
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
-    // Estado para el swipe-to-dismiss
-    // --- CORRECCIÓN DE FUNCIÓN ---
+    // Estado para el swipe-to-dismiss (usando el nombre correcto)
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
-            // --- CORRECCIÓN DE VALORES ---
-            if (dismissValue == SwipeToDismissBoxValue.StartToEnd || dismissValue == SwipeToDismissBoxValue.EndToStart) {
+            if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
+                // Esta función ("removeFromCart") viene del ViewModel
                 viewModel.removeFromCart(item.product)
                 true // Confirmar el "dismiss"
             } else {
@@ -133,13 +132,11 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
         backgroundContent = {
             // Contenido de fondo (ícono de eliminar)
             val color = when (dismissState.dismissDirection) {
-                // --- CORRECCIÓN DE VALORES ---
                 SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.errorContainer
                 SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
-                SwipeToDismissBoxValue.Settled -> Color.Transparent
+                SwipeToDismissBoxValue.Settled -> Color.Transparent // 'Settled' es el estado_base
             }
             val alignment = when (dismissState.dismissDirection) {
-                // --- CORRECCIÓN DE VALORES ---
                 SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
                 SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
                 SwipeToDismissBoxValue.Settled -> Alignment.Center
@@ -158,10 +155,8 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
                 )
             }
         },
-        // --- CORRECCIÓN DE PARÁMETROS ---
-        // Ya no se usan estos parámetros, se definen en el state
-        // enableDismissFromEndToStart = true,
-        // enableDismissFromStartToEnd = true
+        enableDismissFromEndToStart = true,
+        enableDismissFromStartToEnd = true
     ) {
         // Contenido principal del item
         Card(
@@ -196,6 +191,7 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
+                        // La propiedad "unit" viene del Modelo
                         text = "$${String.format("%.0f", item.product.price)} / ${item.product.unit}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
@@ -204,6 +200,7 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
                 Spacer(modifier = Modifier.width(16.dp))
                 QuantitySelector(
                     quantity = item.quantity,
+                    // Estas funciones vienen del ViewModel
                     onIncrease = { viewModel.addToCart(item.product) },
                     onDecrease = { viewModel.decreaseQuantity(item.product) }
                 )

@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+// --- ESTA ES LA IMPORTACIÓN QUE FALTABA ---
+import androidx.compose.foundation.lazy.items
+// ------------------------------------------
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.Search
@@ -66,6 +69,7 @@ fun ProductListScreen(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Esta línea (69) ahora funcionará gracias a la importación
             items(products) { product ->
                 ProductCard(
                     product = product,
