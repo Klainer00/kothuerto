@@ -38,9 +38,6 @@ android {
     buildFeatures {
         compose true // Habilitar Compose
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.14' // Versión compatible
-    }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
