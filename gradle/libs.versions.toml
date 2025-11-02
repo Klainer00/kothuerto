@@ -14,10 +14,14 @@ composeBom = "2024.06.00"
 lifecycle = "2.8.4"
 navigationCompose = "2.7.7"
 coilCompose = "2.6.0"
-kotlinCompilerExtension = "1.5.14" # Requerido para Kotlin 2.0.21
+# --- Versión del compilador de Compose ---
+# Esta versión está ligada a tu versión de Kotlin (2.0.21)
+kotlinComposeCompilerVersion = "1.5.14"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+# ... (resto de librerías sin cambios) ...
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -46,7 +50,10 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 # --- Coil (Imágenes) ---
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+# --- Plugin del compilador de Compose ---
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinComposeCompilerVersion" }
 
