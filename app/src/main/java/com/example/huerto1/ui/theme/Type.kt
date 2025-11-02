@@ -1,4 +1,4 @@
-package ui.theme
+package com.example.huerto1.ui.theme
 
 
 import androidx.compose.material3.Typography

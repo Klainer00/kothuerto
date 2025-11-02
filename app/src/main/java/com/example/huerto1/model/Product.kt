@@ -1,4 +1,4 @@
-package model
+package com.example.huerto1.model
 // Modelo para un Producto
 data class Product(
     val id: String,

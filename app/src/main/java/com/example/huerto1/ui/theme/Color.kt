@@ -1,4 +1,4 @@
-package ui.theme
+package com.example.huerto1.ui.theme
 
 import androidx.compose.ui.graphics.Color
 // Paleta de colores "Huerto"

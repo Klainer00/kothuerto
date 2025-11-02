@@ -1,4 +1,4 @@
-package ui.screens
+package com.example.huerto1.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

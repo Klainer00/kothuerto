@@ -1,10 +1,11 @@
-package viewmodel
+package com.example.huerto1.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -20,7 +21,7 @@ class CartViewModel : ViewModel() {
     // Estado para el total del carro
     val total: StateFlow<Double> = _cartItems.map { items ->
         items.sumOf { it.product.price * it.quantity }
-    }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Lazily, 0.0)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, 0.0)
 
     // Añadir producto (o incrementar cantidad)
     fun addProduct(product: Product) {
