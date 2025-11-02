@@ -18,16 +18,19 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
-// La importación de ExperimentalMaterial3Api se ha eliminado
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
+// --- CORRECCIÓN DE IMPORTACIÓN ---
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+// --- CORRECCIÓN DE IMPORTACIÓN ---
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,8 +48,9 @@ import coil.compose.AsyncImage
 import com.example.huerto1.R
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.viewmodel.CartViewModel
+import kotlin.reflect.KProperty // <-- IMPORTACIÓN AÑADIDA PARA AYUDAR AL COMPILADOR
 
-// --- LA ANOTACIÓN @OptIn HA SIDO ELIMINADA DE AQUÍ ---
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     cartViewModel: CartViewModel = viewModel(),
@@ -107,12 +111,15 @@ fun CartScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class) // <-- Se necesita aquí también
 @Composable
 fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
     // Estado para el swipe-to-dismiss
-    val dismissState = rememberDismissState(
+    // --- CORRECCIÓN DE FUNCIÓN ---
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
-            if (dismissValue == DismissValue.DismissedToEnd || dismissValue == DismissValue.DismissedToStart) {
+            // --- CORRECCIÓN DE VALORES ---
+            if (dismissValue == SwipeToDismissBoxValue.StartToEnd || dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.removeFromCart(item.product)
                 true // Confirmar el "dismiss"
             } else {
@@ -126,14 +133,16 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
         backgroundContent = {
             // Contenido de fondo (ícono de eliminar)
             val color = when (dismissState.dismissDirection) {
-                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.errorContainer
-                DismissDirection.EndToStart -> MaterialTheme.colorScheme.errorContainer
-                null -> Color.Transparent
+                // --- CORRECCIÓN DE VALORES ---
+                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.errorContainer
+                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
+                SwipeToDismissBoxValue.Settled -> Color.Transparent
             }
             val alignment = when (dismissState.dismissDirection) {
-                DismissDirection.StartToEnd -> Alignment.CenterStart
-                DismissDirection.EndToStart -> Alignment.CenterEnd
-                null -> Alignment.Center
+                // --- CORRECCIÓN DE VALORES ---
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                SwipeToDismissBoxValue.Settled -> Alignment.Center
             }
             Box(
                 Modifier
@@ -149,8 +158,10 @@ fun CartItemRow(item: CartItem, viewModel: CartViewModel) {
                 )
             }
         },
-        enableDismissFromEndToStart = true,
-        enableDismissFromStartToEnd = true
+        // --- CORRECCIÓN DE PARÁMETROS ---
+        // Ya no se usan estos parámetros, se definen en el state
+        // enableDismissFromEndToStart = true,
+        // enableDismissFromStartToEnd = true
     ) {
         // Contenido principal del item
         Card(

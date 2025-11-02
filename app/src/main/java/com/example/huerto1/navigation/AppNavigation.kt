@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController // Importado
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -76,6 +77,7 @@ sealed class Destinations(
 // --- Navegación principal de la App ---
 @Composable
 fun AppNavigation() {
+    // rememberNavController() devuelve un NavHostController
     val navController = rememberNavController()
     // Controladores de ViewModels
     val productListViewModel: ProductListViewModel = viewModel()
@@ -94,7 +96,7 @@ fun AppNavigation() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold(
-    navController: NavController,
+    navController: NavHostController,
     cartViewModel: CartViewModel,
     productListViewModel: ProductListViewModel
 ) {
@@ -155,15 +157,14 @@ fun MainScaffold(
                         }
                     }
                     composable(Destinations.Products.route) {
+                        // --- CORRECCIÓN AQUÍ ---
+                        // Modificado para coincidir con tu ProductListScreen.kt
                         ProductListScreen(
-                            navController = navController,
-                            productListViewModel = productListViewModel,
+                            viewModel = productListViewModel,
                             cartViewModel = cartViewModel
                         )
                     }
                     composable(Destinations.Cart.route) {
-                        // --- CORRECCIÓN AQUÍ ---
-                        // El parámetro se llama "cartViewModel", no "viewModel"
                         CartScreen(
                             cartViewModel = cartViewModel,
                             onBackPress = { navController.popBackStack() }
