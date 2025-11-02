@@ -29,7 +29,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.experimental.ExperimentalMaterial3Api
+import androidx.compose.material3.experimental.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,7 +43,34 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.huerto1.model.CartItem
 import com.example.huerto1.viewmodel.CartViewModel
+@OptIn(ExperimentalMaterial3Api::class) // Make sure this annotation is here
+@Composable
+fun SwipeToDeleteItem(
+    item: CartItem,
+    onRemove: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    // This line will now work correctly
+    val dismissState = androidx.compose.material3.rememberDismissState(
+        confirmValueChange = {
+            if (it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) {
+                onRemove()
+                true
+            } else false
+        }
+    )
 
+    SwipeToDismiss(
+        state = dismissState,
+        directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
+        background = {
+            SwipeBackground(dismissState)
+        },
+        dismissContent = {
+            content()
+        }
+    )
+}
 @Composable
 fun CartScreen(
     viewModel: CartViewModel,
